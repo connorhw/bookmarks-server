@@ -4,6 +4,7 @@ const morgan = require('morgan')
 const cors = require('cors')
 const helmet = require('helmet')
 const { NODE_ENV } = require('./config')
+const BookmarksService = require('./bookmarks-service')
 
 const app = express()
 const winston = require('winston');
@@ -44,6 +45,25 @@ app.use(function validateBearerToken(req, res, next) {
   next()
 })
 
+app.get('/', (req, res) => {
+  res.send('Hello, world! Bookmarks-server app is working!')
+})
+/*
+app.get('/bookmarks', (req, res) => {
+  res
+    .json(bookmarks);
+});
+*/
+app.get('/bookmarks', (req, res, next) => {
+  const knexInstance = req.app.get('db')
+  //res.send('All bookmarks')
+  BookmarksService.getAllBookmarks(knexInstance)
+    .then(bookmarks => {
+      res.json(bookmarks)
+    })
+    .catch(next)
+})
+
 app.use(function errorHandler(error, req, res, next) {
    let response
    //if (process.env.NODE_ENV === 'production') {
@@ -62,15 +82,6 @@ app.use(function errorHandler(error, req, res, next) {
   content: 'This is bookmark 1',
 
 }];
-
- app.get('/', (req, res) => {
-  res.send('Hello, world! Bookmarks-server app is working!')
-})
-
-app.get('/bookmarks', (req, res) => {
-  res
-    .json(bookmarks);
-});
 
 app.get('/bookmarks/:id', (req, res) => {
   const { id } = req.params;
