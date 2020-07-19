@@ -32,7 +32,7 @@ app.use(morgan(morganOption))
 app.use(helmet())
 app.use(cors())
 app.use(express.json());
-
+/*
 app.use(function validateBearerToken(req, res, next) {
   const apiToken = process.env.API_TOKEN
   const authToken = req.get('Authorization')
@@ -44,7 +44,7 @@ app.use(function validateBearerToken(req, res, next) {
   // move to the next middleware
   next()
 })
-
+*/
 app.get('/', (req, res) => {
   res.send('Hello, world! Bookmarks-server app is working!')
 })
@@ -60,6 +60,30 @@ app.get('/bookmarks', (req, res, next) => {
   BookmarksService.getAllBookmarks(knexInstance)
     .then(bookmarks => {
       res.json(bookmarks)
+    })
+    .catch(next)
+})
+/*
+app.get('/bookmarks/:id', (req, res) => {
+  const { id } = req.params;
+  const bookmark = bookmarks.find(b => b.id == id);
+
+  if (!bookmark) {
+    logger.error(`Bookmark with id ${id} not found.`);
+    return res
+      .status(404)
+      .send('Bookmark Not Found');
+  }
+
+  res.json(bookmark);
+})
+*/
+app.get('/bookmarks/:bookmark_id', (req, res, next) => {
+  //res.json({ 'requested_id': req.params.bookmark_id, this: 'should fail' })
+  const knexInstance = req.app.get('db')
+  BookmarksService.getById(knexInstance, req.params.bookmark_id)
+    .then(bookmark => {
+      res.json(bookmark)
     })
     .catch(next)
 })
@@ -82,20 +106,6 @@ app.use(function errorHandler(error, req, res, next) {
   content: 'This is bookmark 1',
 
 }];
-
-app.get('/bookmarks/:id', (req, res) => {
-  const { id } = req.params;
-  const bookmark = bookmarks.find(b => b.id == id);
-
-  if (!bookmark) {
-    logger.error(`Bookmark with id ${id} not found.`);
-    return res
-      .status(404)
-      .send('Bookmark Not Found');
-  }
-
-  res.json(bookmark);
-})
 
 const { v4: uuid } = require('uuid');
 

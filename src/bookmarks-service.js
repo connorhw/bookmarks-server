@@ -5,6 +5,9 @@ const BookmarksService = {
         //return Promise.resolve('all the articles!!')
         return knex.select('*').from('bookmarks_table')
     },
+    getById(knex, id) {
+        return knex.from('bookmarks_table').select('*').where('id', id).first()
+    }
     /*
     insertArticle(knex, newArticle) {
         return knex
