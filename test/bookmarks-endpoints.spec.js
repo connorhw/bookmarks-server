@@ -2,6 +2,7 @@ const { expect } = require('chai')
 const knex = require('knex')
 const app = require('../src/app')
 const supertest = require('supertest')
+const { makeBookmarksArray } = require('./bookmarks.fixtures')
 
 describe.only('Bookmarks Endpoints', function() {
     let db
@@ -20,46 +21,29 @@ describe.only('Bookmarks Endpoints', function() {
 
     afterEach('cleanup', () => db('bookmarks_table').truncate())
 
-    /*
+    
     describe(`GET /bookmarks`, () => {
         context(`Given no bookmarks`, () => {
             it(`responds with 200 and an empty list`, () => {
-
+                return supertest(app)
+                    .get('/bookmarks')
+                    .expect(200, [])
             })
         })
     })
-    */
+    describe(`GET /bookmarks/:bookmark_id`, () => {
+        context(`Given no bookmarks`, () => {
+            it(`responds with 404`, () => {
+                const bookmarkId = 123456
+                return supertest(app)
+                    .get(`/bookmarks/${bookmarkId}`)
+                    .expect(404, { error: { message: `Bookmark doesn't exist` } })
+            })
+        })
+    })
+    
     context('Given there are bookmarks in the db', () => {
-        const testBookmarks = [
-            {
-                id: 1,
-                title: 'title 1',
-                url: 'www.1.com',
-                description: 'desc 1',
-                rating: 1,
-            },
-            {
-                id: 2,
-                title: 'title 2',
-                url: 'www.2.net',
-                description: 'desc 2',
-                rating: 22,
-            },
-            {
-                id: 3,
-                title: 'title 3',
-                url: 'www.3.org',
-                description: 'desc 3',
-                rating: 333,
-            },
-            {
-                id: 4,
-                title: 'title 4',
-                url: 'www.4.edu',
-                description: 'desc 4',
-                rating: 4444,
-            },
-        ];
+        const testBookmarks = makeBookmarksArray()
         beforeEach('insert bookmarks', () => {
             return db
                 .into('bookmarks_table')
