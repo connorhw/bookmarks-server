@@ -63,4 +63,17 @@ describe.only('Bookmarks Endpoints', function() {
                 .expect(200, expectedBookmark)
         })
     })
+    describe.only(`POST /bookmarks`, () => {
+        it(`creates a bookmark, responding with 201 and the new bookmark`, function() {
+            return supertest(app)
+                .post('/bookmarks')
+                .send({
+                    title: 'Test new bookmark',
+                    url: 'Test new url',
+                    description: 'Test new descr',
+                    rating: 7
+                })
+                .expect(201)
+        })
+    })
 })

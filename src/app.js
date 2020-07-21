@@ -63,6 +63,9 @@ app.get('/bookmarks', (req, res, next) => {
     })
     .catch(next)
 })
+app.post('/bookmarks', (req, res, next) => {
+  res.status(201).send('stuffs')
+})
 /*
 app.get('/bookmarks/:id', (req, res) => {
   const { id } = req.params;
