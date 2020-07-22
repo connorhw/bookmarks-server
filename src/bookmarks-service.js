@@ -7,17 +7,18 @@ const BookmarksService = {
     },
     getById(knex, id) {
         return knex.from('bookmarks_table').select('*').where('id', id).first()
-    }
-    /*
-    insertArticle(knex, newArticle) {
+    },
+    
+    insertBookmark(knex, newBookmark) {
         return knex
-            .insert(newArticle)
-            .into('blogful_articles')
+            .insert(newBookmark)
+            .into('bookmarks_table')
             .returning('*')
             .then(rows => {
                 return rows[0]
             })
     },
+    /*
     getById(knex, id) {
         return knex.from('blogful_articles').select('*').where('id', id).first()
     },

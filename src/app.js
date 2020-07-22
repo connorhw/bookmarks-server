@@ -8,6 +8,7 @@ const BookmarksService = require('./bookmarks-service')
 
 const app = express()
 const winston = require('winston');
+const jsonParser = express.json()
 
 //const morganOption = (process.env.NODE_ENV === 'production')
 const morganOption = (NODE_ENV === 'production')
@@ -63,8 +64,20 @@ app.get('/bookmarks', (req, res, next) => {
     })
     .catch(next)
 })
-app.post('/bookmarks', (req, res, next) => {
-  res.status(201).send('stuffs')
+app.post('/bookmarks', jsonParser, (req, res, next) => {
+  const { title, url, description, rating } = req.body
+  const newBookmark = { title, url, description, rating }
+  BookmarksService.insertBookmark(
+    req.app.get('db'),
+    newBookmark
+  )
+  .then(bookmark => {
+    res
+      .status(201)
+      .location(`/bookmarks/${bookmark.id}`)
+      .json(bookmark)
+  })
+  .catch(next)
 })
 /*
 app.get('/bookmarks/:id', (req, res) => {
