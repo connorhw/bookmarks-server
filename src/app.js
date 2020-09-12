@@ -9,8 +9,6 @@ const BookmarksService = require('./bookmarks/bookmarks-service')
 const app = express()
 const winston = require('winston');
 const jsonParser = express.json()
-
-//const morganOption = (process.env.NODE_ENV === 'production')
 const morganOption = (NODE_ENV === 'production')
   ? 'tiny'
   : 'common';
@@ -33,31 +31,13 @@ app.use(morgan(morganOption))
 app.use(helmet())
 app.use(cors())
 app.use(express.json());
-/*
-app.use(function validateBearerToken(req, res, next) {
-  const apiToken = process.env.API_TOKEN
-  const authToken = req.get('Authorization')
 
-  if (!authToken || authToken.split(' ')[1] !== apiToken) {
-    logger.error(`Unauthorized request to path: ${req.path}`);
-    return res.status(401).json({ error: 'Unauthorized request' })
-  }
-  // move to the next middleware
-  next()
-})
-*/
 app.get('/', (req, res) => {
-  res.send('Hello, world! Bookmarks-server app is working!')
+  res.send('Hello, world!')
 })
-/*
-app.get('/bookmarks', (req, res) => {
-  res
-    .json(bookmarks);
-});
-*/
+
 app.get('/bookmarks', (req, res, next) => {
   const knexInstance = req.app.get('db')
-  //res.send('All bookmarks')
   BookmarksService.getAllBookmarks(knexInstance)
     .then(bookmarks => {
       res.json(bookmarks)
@@ -67,6 +47,15 @@ app.get('/bookmarks', (req, res, next) => {
 app.post('/bookmarks', jsonParser, (req, res, next) => {
   const { title, url, description, rating } = req.body
   const newBookmark = { title, url, description, rating }
+
+  for (const [key, value] of Object.entries(newBookmark)) {
+    if (value == null) {
+      return res.status(400).json({
+        error: { message: `Missing '${key}' in request body` }
+      })
+    }
+  }
+
   BookmarksService.insertBookmark(
     req.app.get('db'),
     newBookmark
@@ -79,23 +68,8 @@ app.post('/bookmarks', jsonParser, (req, res, next) => {
   })
   .catch(next)
 })
-/*
-app.get('/bookmarks/:id', (req, res) => {
-  const { id } = req.params;
-  const bookmark = bookmarks.find(b => b.id == id);
 
-  if (!bookmark) {
-    logger.error(`Bookmark with id ${id} not found.`);
-    return res
-      .status(404)
-      .send('Bookmark Not Found');
-  }
-
-  res.json(bookmark);
-})
-*/
 app.get('/bookmarks/:bookmark_id', (req, res, next) => {
-  //res.json({ 'requested_id': req.params.bookmark_id, this: 'should fail' })
   const knexInstance = req.app.get('db')
   BookmarksService.getById(knexInstance, req.params.bookmark_id)
     .then(bookmark => {
@@ -111,7 +85,6 @@ app.get('/bookmarks/:bookmark_id', (req, res, next) => {
 
 app.use(function errorHandler(error, req, res, next) {
    let response
-   //if (process.env.NODE_ENV === 'production') {
    if (NODE_ENV === 'production') {
      response = { error: { message: 'server error' } }
    } else {
@@ -130,7 +103,7 @@ app.use(function errorHandler(error, req, res, next) {
 
 const { v4: uuid } = require('uuid');
 
-app.post('/bookmark', (req, res) => {
+app.post('/bookmarks', (req, res) => {
   const { title, content } = req.body;
 
   if (!title) {
@@ -180,6 +153,11 @@ app.delete('/bookmark/:id', (req, res) => {
   res
     .status(204)
     .end();
+});
+
+app.get('/xss', (req, res) => {
+  res.cookie('secretToken', '1234567890');
+  res.sendFile(__dirname + '/xss-example.html');
 });
 
 module.exports = app;

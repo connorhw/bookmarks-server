@@ -4,7 +4,7 @@ const app = require('../src/app')
 const supertest = require('supertest')
 const { makeBookmarksArray } = require('./bookmarks.fixtures')
 
-describe.only('Bookmarks Endpoints', function() {
+describe('Bookmarks Endpoints', function() {
     let db
 
     before('make knex instance', () => {
@@ -63,7 +63,32 @@ describe.only('Bookmarks Endpoints', function() {
                 .expect(200, expectedBookmark)
         })
     })
-    describe.only(`POST /bookmarks`, () => {
+/*
+    context(`Given an XSS attack bookmark`, () => {
+        const maliciousBookmark = {
+            id: 911,
+            title: 'Naughty naughty very naughty <script>alert("xss");</script>',
+            url: 'How-to.com',
+            description: `Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.`,
+            rating: 3
+        }
+        beforeEach('insert malicious bookmark', () => {
+            return db
+                .into(bookmarks_table)
+                .insert( [ maliciousBookmark ])
+        })
+        it('removes XSS attack description', () => {
+            return supertest(app)
+                .get(`/bookmarks/${maliciousBookmark.id}`)
+                .expect(200)
+                .expect(res => {
+                    expect(res.body.title).to.eql('Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;')
+                    expect(res.body.description).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`)
+                })
+        })
+    })
+*/
+    describe(`POST /bookmarks`, () => {
         it(`creates a bookmark, responding with 201 and the new bookmark`, function() {
             const newBookmark = {
                 title: 'Test new bookmark',
@@ -88,6 +113,27 @@ describe.only('Bookmarks Endpoints', function() {
                         .get(`/bookmarks/${postRes.body.id}`)
                         .expect(postRes.body)
                 )
+        })
+        const requiredFields = ['title', 'url', 'description', 'rating']
+
+        requiredFields.forEach(field => {
+            const newBookmark = {
+                title: 'test new bookmark',
+                url: 'url url new new',
+                description: 'test new descr content',
+                rating: 5
+            }
+
+            it(`responds with 400 and an error message when the '${field}' is missing`, () => {
+                delete newBookmark[field] //why do we need 'field' in there?
+
+                return supertest(app)
+                    .post('/bookmarks')
+                    .send(newBookmark)
+                    .expect(400, {
+                        error: { message: `Missing '${field}' in request body` }
+                    })
+            })
         })
     })
 })

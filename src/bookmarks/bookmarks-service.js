@@ -18,21 +18,21 @@ const BookmarksService = {
                 return rows[0]
             })
     },
-    /*
+    
     getById(knex, id) {
-        return knex.from('blogful_articles').select('*').where('id', id).first()
+        return knex.from('bookmarks_table').select('*').where('id', id).first()
     },
-    deleteArticle(knex, id) {
-        return knex('blogful_articles')
+    deleteBookmark(knex, id) {
+        return knex('bookmarks_tableles')
             .where({id})
             .delete()
     },
-    updateArticle(knex, id, newArticleFields) {
-        return knex('blogful_articles')
+    updateBookmark(knex, id, newBookmarkFields) {
+        return knex('bookmarks_table')
             .where({id})
-            .update(newArticleFields)
+            .update(newBookmarkFields)
     },
-    */
+    
 }
 
 module.exports = BookmarksService
